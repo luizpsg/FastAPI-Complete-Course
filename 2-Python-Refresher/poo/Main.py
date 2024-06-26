@@ -1,6 +1,7 @@
 from Enemy import *
 from Zombie import *
 from Ogre import *
+from Hero import *
 import random
 
 
@@ -30,4 +31,37 @@ def battle(e: Enemy, e2: Enemy):
 zombie = Zombie(10, 1)
 ogre = Ogre(20, 3)
 
-battle(zombie, ogre)
+# battle(zombie, ogre)
+
+
+hero = Hero(10, 1)
+weapon = Weapon("Sword", 5)
+hero.weapon = weapon
+hero.equip_weapon()
+
+
+def hero_battle(hero: Hero, enemy: Enemy):
+    print(hero.equip_weapon())
+    print(enemy.talk())
+
+    while hero.hp > 0 and enemy.hp > 0:
+        print("------------")
+
+        print(enemy.special_attack())
+
+        print(f"Hero: {hero.hp} HP Left | {enemy.type_of_enemy}: {enemy.hp} HP Left")
+
+        print(hero.attack())
+        enemy.hp -= hero.attack_damage
+
+        print(enemy.attack())
+        hero.hp -= enemy.attack_damage
+
+    print("------------")
+    if hero.hp <= 0:
+        print(f"{enemy.type_of_enemy} has won!")
+    else:
+        print(f"Hero wins!")
+
+
+hero_battle(hero, zombie)
