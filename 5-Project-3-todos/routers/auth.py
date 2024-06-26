@@ -6,6 +6,7 @@ from passlib.context import CryptContext
 from database import SessionLocal
 from sqlalchemy.orm import Session
 from starlette import status
+from fastapi.security import OAuth2PasswordRequestForm
 
 router = APIRouter()
 
@@ -21,6 +22,15 @@ def get_db():
 
 
 db_dependency = Annotated[Session, Depends(get_db)]
+
+
+def authenticate_user(db: Session, username: str, password: str):
+    user = db.query(Users).filter(Users.username == username).first()
+    if not user:
+        return False
+    if not bcrypt_context.verify(password, user.hashed_password):
+        return False
+    return user
 
 
 class CreateUserRequest(BaseModel):
@@ -49,3 +59,13 @@ async def create_user(db: db_dependency, create_user_request: CreateUserRequest)
     db.refresh(create_user_model)
 
     return create_user_model
+
+
+@router.post("/token")
+async def login_for_access_token(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency
+):
+    user = authenticate_user(db, form_data.username, form_data.password)
+    if not user:
+        return {"error": "Incorrect username or password"}
+    return {"access_token": user.username, "token_type": "bearer"}
