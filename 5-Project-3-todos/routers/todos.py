@@ -31,12 +31,23 @@ class TodoRequest(BaseModel):
 
 @router.get("/todos", status_code=status.HTTP_200_OK)
 async def read_all(user: user_dependency, db: db_dependency):
+    if user is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
     return db.query(Todos).filter(Todos.owner_id == user.get("id")).all()
 
 
 @router.get("/todos/{todo_id}", status_code=status.HTTP_200_OK)
-async def read_one(db: db_dependency, todo_id: int = Path(gt=0)):
-    todo = db.query(Todos).filter(Todos.id == todo_id).first()
+async def read_one(user: user_dependency, db: db_dependency, todo_id: int = Path(gt=0)):
+    if user is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+
+    todo = (
+        db.query(Todos)
+        .filter(Todos.id == todo_id)
+        .filter(Todos.owner_id == user.get("id"))
+        .first()
+    )
+
     if todo is not None:
         return todo
     raise HTTPException(status_code=404, detail="Todo not found")
