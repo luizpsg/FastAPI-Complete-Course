@@ -37,6 +37,26 @@ async def read_category_by_query(category: str):
     return books_to_return
 
 
+@app.get("/books/by-author/{author}")
+async def read_author(author: str):
+    books_to_return = []
+    for book in BOOKS:
+        auth = book.get("author")
+        if auth and auth.casefold() == author.casefold():
+            books_to_return.append(book)
+    return books_to_return
+
+
+@app.get("/books/by-author/")
+async def read_author(author: str):
+    books_to_return = []
+    for book in BOOKS:
+        auth = book.get("author")
+        if auth and auth.casefold() == author.casefold():
+            books_to_return.append(book)
+    return books_to_return
+
+
 @app.get("/books/{author}/")
 async def read_author_by_query(author: str, category: str):
     books_to_return = []
@@ -65,4 +85,13 @@ async def update_book(update_book=Body()):
         if BOOKS[i].get("title").casefold() == update_book.get("title").casefold():
             BOOKS[i] = update_book
             return update_book
+    return {"error": "Book not found"}, 404
+
+
+@app.delete("/books/delete_book/{book_title}")
+async def delete_book(book_title: str):
+    for i in range(len(BOOKS)):
+        if BOOKS[i].get("title").casefold() == book_title.casefold():
+            deleted_book = BOOKS.pop(i)
+            return deleted_book
     return {"error": "Book not found"}, 404
