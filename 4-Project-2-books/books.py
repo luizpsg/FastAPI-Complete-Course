@@ -15,16 +15,21 @@ class Book:
 
 
 class BookRequest(BaseModel):
-    id: Optional[int] = (
-        Field(
-            title="The ID of the book", description="This is an auto-generated field"
-        ),
-        None,
-    )
+    id: Optional[int] = Field(None, title="Id is not needed")
     title: str = Field(min_length=3, max_length=50)
     author: str = Field(min_length=3, max_length=50)
     description: str = Field(min_length=5, max_length=100)
     rating: int = Field(ge=1, le=5)
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "title": "A new book",
+                "author": "Luiz Paulo Saud",
+                "description": "A description of the book",
+                "rating": 5,
+            }
+        }
 
 
 BOOKS = [
@@ -40,6 +45,14 @@ BOOKS = [
 @app.get("/books")
 async def read_all_books():
     return BOOKS
+
+
+@app.get("/books/{book_id}")
+async def read_book(book_id: int):
+    for book in BOOKS:
+        if book.id == book_id:
+            return book
+    return {"error": "Book not found"}
 
 
 @app.post("/create_book")
