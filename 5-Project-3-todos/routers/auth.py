@@ -10,13 +10,13 @@ from starlette import status
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt, JWTError
 
-router = APIRouter()
+router = APIRouter(prefix="/auth", tags=["auth"])
 
 SECRET_KEY = "53B9BCF5732AFCC8E4CCEC168A28B8233EB21061DA0A7B969EBBF69F480DD879"
 ALGORITHM = "HS256"
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_bearer = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 
 def get_db():
@@ -78,7 +78,7 @@ class Token(BaseModel):
     token_type: str
 
 
-@router.post("/auth", status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_user(db: db_dependency, create_user_request: CreateUserRequest):
     create_user_model = Users(
         email=create_user_request.email,
@@ -103,6 +103,9 @@ async def login_for_access_token(
 ):
     user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
-        return {"error": "Incorrect username or password"}
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+        )
     token = create_access_token(user.username, user.id, timedelta(minutes=20))
     return {"access_token": token, "token_type": "bearer"}

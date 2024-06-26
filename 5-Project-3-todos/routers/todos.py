@@ -6,7 +6,7 @@ from models import Todos
 from database import SessionLocal
 from starlette import status
 
-router = APIRouter()
+router = APIRouter(tags=["todos"])
 
 
 def get_db():
