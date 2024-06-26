@@ -6,12 +6,21 @@ app = FastAPI()
 
 
 class Book:
-    def __init__(self, id: int, title: str, author: str, description: str, rating: int):
+    def __init__(
+        self,
+        id: int,
+        title: str,
+        author: str,
+        description: str,
+        rating: int,
+        published_date: int,
+    ):
         self.id = id
         self.title = title
         self.author = author
         self.description = description
         self.rating = rating
+        self.published_date = published_date
 
 
 class BookRequest(BaseModel):
@@ -20,6 +29,7 @@ class BookRequest(BaseModel):
     author: str = Field(min_length=3, max_length=50)
     description: str = Field(min_length=5, max_length=100)
     rating: int = Field(ge=1, le=5)
+    published_date: int = Field(ge=1000, le=2024)
 
     class Config:
         json_schema_extra = {
@@ -28,17 +38,29 @@ class BookRequest(BaseModel):
                 "author": "Luiz Paulo Saud",
                 "description": "A description of the book",
                 "rating": 5,
+                "published_date": 2021,
             }
         }
 
 
 BOOKS = [
-    Book(1, "War and Peace", "Leo Tolstoy", "Epic novel about Russian society", 5),
-    Book(2, "Pride and Prejudice", "Jane Austen", "British novel about love", 5),
-    Book(3, "Crime and Punishment", "Fyodor Dostoevsky", "Psychological novel", 4),
-    Book(4, "Wuthering Heights", "Emily Bronte", "Gothic novel", 2),
-    Book(5, "Anna Karenina", "Leo Tolstoy", "Russian novel about love and society", 5),
-    Book(6, "To Kill a Mockingbird", "Harper Lee", "American novel", 4),
+    Book(
+        1, "War and Peace", "Leo Tolstoy", "Epic novel about Russian society", 5, 1869
+    ),
+    Book(2, "Pride and Prejudice", "Jane Austen", "British novel about love", 5, 1813),
+    Book(
+        3, "Crime and Punishment", "Fyodor Dostoevsky", "Psychological novel", 4, 1869
+    ),
+    Book(4, "Wuthering Heights", "Emily Bronte", "Gothic novel", 2, 1847),
+    Book(
+        5,
+        "Anna Karenina",
+        "Leo Tolstoy",
+        "Russian novel about love and society",
+        5,
+        1877,
+    ),
+    Book(6, "To Kill a Mockingbird", "Harper Lee", "American novel", 4, 1960),
 ]
 
 
@@ -47,7 +69,7 @@ async def read_all_books():
     return BOOKS
 
 
-@app.get("/books/{book_id}")
+@app.get("/books/id/{book_id}")
 async def read_book(book_id: int):
     for book in BOOKS:
         if book.id == book_id:
@@ -60,6 +82,15 @@ async def read_book_by_rating(book_rating: int):
     books_to_return = []
     for book in BOOKS:
         if book.rating == book_rating:
+            books_to_return.append(book)
+    return books_to_return
+
+
+@app.get("/books/published-date/{published_date}")
+async def read_book_by_published_date(published_date: int):
+    books_to_return = []
+    for book in BOOKS:
+        if book.published_date == published_date:
             books_to_return.append(book)
     return books_to_return
 
@@ -82,4 +113,13 @@ async def update_book(book: BookRequest):
         if BOOKS[i].id == book.id:
             BOOKS[i] = book
             return book
+    return {"error": "Book not found"}
+
+
+@app.delete("/books/{book_id}")
+async def delete_book(book_id: int):
+    for i in range(len(BOOKS)):
+        if BOOKS[i].id == book_id:
+            BOOKS.pop(i)
+            return {"message": "Book deleted"}
     return {"error": "Book not found"}
