@@ -6,7 +6,9 @@ from database import Base
 from main import app
 from fastapi.testclient import TestClient
 import pytest
-from models import Todos
+from models import Todos, Users
+from routers.auth import bcrypt_context
+
 
 # Caminho do banco de dados na pasta test
 TEST_DB_PATH = os.path.join(os.path.dirname(__file__), "test.db")
@@ -54,4 +56,24 @@ def test_todo():
     yield todo
     with engine.connect() as connection:
         connection.execute(text("DELETE FROM todos"))
+        connection.commit()
+
+
+@pytest.fixture
+def test_user():
+    user = Users(
+        username="testuser",
+        email="user@test.com",
+        first_name="Test",
+        last_name="User",
+        hashed_password=bcrypt_context.hash("password"),
+        role="admin",
+        phone_number="123456789",
+    )
+    db = TestingSessionLocal()
+    db.add(user)
+    db.commit()
+    yield user
+    with engine.connect() as connection:
+        connection.execute(text("DELETE FROM users"))
         connection.commit()
