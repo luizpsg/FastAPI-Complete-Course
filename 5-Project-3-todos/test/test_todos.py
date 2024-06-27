@@ -114,3 +114,38 @@ def test_create_todo(test_todo):
         "completed": False,
         "owner_id": 1,
     }
+
+
+def test_update_todo(test_todo):
+    request_data = {
+        "title": "Updated Todo",
+        "description": "Updated Description",
+        "priority": 3,
+        "completed": True,
+    }
+
+    response = client.put("/todos/1", json=request_data)
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {
+        "id": 1,
+        "title": "Updated Todo",
+        "description": "Updated Description",
+        "priority": 3,
+        "completed": True,
+        "owner_id": 1,
+    }
+
+
+def test_delete_todo(test_todo):
+    response = client.delete("/todos/1")
+    assert response.status_code == status.HTTP_200_OK
+    db = TestingSessionLocal()
+    todo = db.query(Todos).filter(Todos.id == 1).first()
+    assert todo is None
+    assert response.json() == {"detail": "Todo deleted successfully"}
+
+
+def test_delete_todo_not_found(test_todo):
+    response = client.delete("/todos/999")
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.json() == {"detail": "Todo not found"}

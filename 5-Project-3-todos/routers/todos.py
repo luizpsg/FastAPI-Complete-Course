@@ -121,4 +121,4 @@ async def delete_todo(
 
     db.delete(todo)
     db.commit()
-    return {"message": "Todo deleted successfully"}
+    return {"detail": "Todo deleted successfully"}
