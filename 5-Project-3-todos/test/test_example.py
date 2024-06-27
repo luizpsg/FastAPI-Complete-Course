@@ -37,3 +37,23 @@ def test_list():
     assert 6 not in num_list
     assert all(num_list)
     assert not any(any_list)
+
+
+class Student:
+    def __init__(self, first_name: str, last_name: str, major: str, years: int):
+        self.first_name = first_name
+        self.last_name = last_name
+        self.major = major
+        self.years = years
+
+
+@pytest.fixture
+def default_student():
+    return Student("John", "Doe", "Computer Science", 4)
+
+
+def test_person_initialization(default_student):
+    assert default_student.first_name == "John", "First name is not John"
+    assert default_student.last_name == "Doe", "Last name is not Doe"
+    assert default_student.major == "Computer Science", "Major is not Computer Science"
+    assert default_student.years == 4, "Years is not 4"
