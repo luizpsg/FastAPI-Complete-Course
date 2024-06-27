@@ -75,3 +75,42 @@ def test_read_all_authenticated(test_todo):
             "owner_id": 1,
         }
     ]
+
+
+def test_read_one_authenticated(test_todo):
+    response = client.get("/todos/1")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {
+        "id": 1,
+        "title": "Test Todo",
+        "description": "Test Description",
+        "priority": 1,
+        "completed": False,
+        "owner_id": 1,
+    }
+
+
+def test_read_one_authenticated_not_found(test_todo):
+    response = client.get("/todos/999")
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.json() == {"detail": "Todo not found"}
+
+
+def test_create_todo(test_todo):
+    request_data = {
+        "title": "New Todo",
+        "description": "New Description",
+        "priority": 2,
+        "completed": False,
+    }
+
+    response = client.post("/todos/", json=request_data)
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json() == {
+        "id": 2,
+        "title": "New Todo",
+        "description": "New Description",
+        "priority": 2,
+        "completed": False,
+        "owner_id": 1,
+    }
