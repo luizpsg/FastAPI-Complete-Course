@@ -49,7 +49,7 @@ async def change_password(
     user_db = db.query(Users).filter(Users.id == user.get("id")).first()
 
     if not bcrypt_context.verify(user_verification.password, user_db.hashed_password):
-        raise HTTPException(status_code=400, detail="Invalid password")
+        raise HTTPException(status_code=401, detail="Error: Invalid password")
 
     user_db.hashed_password = bcrypt_context.hash(user_verification.new_password)
     db.commit()

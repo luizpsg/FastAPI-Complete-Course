@@ -63,6 +63,7 @@ def test_todo():
 def test_user():
     user = Users(
         username="testuser",
+        id=1,
         email="user@test.com",
         first_name="Test",
         last_name="User",
